@@ -1,0 +1,12 @@
+---
+- name: ssh configure, install lemp, download wordpress,configure rotate logs
+  hosts: server02
+  become: true
+
+  roles:
+     - initial
+     - nginx
+     - php-fpm
+     - mysql
+     - wordpress
+     - logrotate

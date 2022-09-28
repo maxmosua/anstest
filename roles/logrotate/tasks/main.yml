@@ -1,0 +1,73 @@
+---
+- name: "Add config block to logrotate mysql-server file"
+  blockinfile:
+    path: "/etc/logrotate.d/mysql-server"
+    block: |
+      /var/log/mysql.log /var/log/mysql/*log {
+        daily
+        rotate 30
+        maxsize 100M
+        missingok
+        create 640 mysql adm
+        compress
+        sharedscripts
+        postrotate
+                test -x /usr/bin/mysqladmin || exit 0
+                # If this fails, check debian.conf! 
+                MYADMIN="/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf"
+                if [ -z "`$MYADMIN ping 2>/dev/null`" ]; then
+                # Really no mysqld or rather a missing debian-sys-maint 
+                # If this occurs and is not a error please report a bug.
+                #if ps cax | grep -q mysqld; then
+                 if killall -q -s0 -umysql mysqld; then
+                    exit 1
+                 fi 
+                 else
+                 $MYADMIN flush-logs
+                 fi
+        endscript
+      }
+
+
+- name: "Add config block to logrotate nginx log file"
+  blockinfile:
+    path: "/etc/logrotate.d/nginx"
+    block: |
+      /var/log/nginx/*.log {
+        daily
+        missingok
+        rotate 30
+        compress
+        maxsize 100M
+        delaycompress
+        notifempty
+        create 0640 www-data adm
+        sharedscripts
+        prerotate
+                if [ -d /etc/logrotate.d/httpd-prerotate ]; then \
+                        run-parts /etc/logrotate.d/httpd-prerotate; \
+                fi \
+        endscript
+        postrotate
+                invoke-rc.d nginx rotate >/dev/null 2>&1
+        endscript
+      }
+
+- name: "Add config block to logrotate php-fpm log file"
+  blockinfile:
+    path: "/etc/logrotate.d/php{{ php_version }}-fpm"
+    block: |
+      /var/log/{{ php_version }}-fpm.log {
+        rotate 30
+        daily
+        maxsize 100M
+        missingok
+        notifempty
+        compress
+        delaycompress
+        postrotate
+                if [ -x /usr/lib/php/php{{ php_version }}-fpm-reopenlogs ]; then
+                        /usr/lib/php/php{{ php_version }}-fpm-reopenlogs;
+                fi
+        endscript
+       }

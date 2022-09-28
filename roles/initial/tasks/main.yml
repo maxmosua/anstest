@@ -1,0 +1,31 @@
+---
+  - name: Update repositories cache
+    apt:
+      update_cache: yes
+
+  - name: Change ssh port
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      regexp: '^#?#Port'
+      line: 'Port 1234'
+
+  - name: Change ssh auth          
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      regexp: '^#?#PasswordAuthentication'  
+      line: 'PasswordAuthentication no'
+
+  - name: Include the csf role
+    include_role:
+      name: likg.csf
+
+  - name: Restart ssh service
+    service:
+      name: sshd
+      state: reloaded
+
+  - name: Set SSH port to 1234
+    set_fact:
+      ansible_port: "1234"

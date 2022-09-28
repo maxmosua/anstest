@@ -1,0 +1,43 @@
+---
+  - name: creates database for WordPress
+    mysql_db:
+      name: "{{ mysql_db }}"
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+
+  - name: create MySQL user for WordPress
+    mysql_user:
+      name: "{{ mysql_user }}"
+      password: "{{ mysql_password }}"
+      priv: "{{ mysql_db }}.*:ALL"
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+
+  - name: download and unpack latest WordPress
+    unarchive:
+      src: https://wordpress.org/latest.tar.gz
+      dest: "/var/www/"
+      remote_src: yes
+      creates: "/var/www/{{ http_host }}"
+
+  - name: set ownership
+    file:
+      path: "/var/www/{{ http_host }}"
+      state: directory
+      recurse: yes
+      owner: www-data
+      group: www-data
+
+  - name: Set permissions for directories
+    shell: "/usr/bin/find /var/www/{{ http_host }} -type d -exec chmod 750 {} \\;"
+
+  - name: Set permissions for files
+    shell: "/usr/bin/find /var/www/{{ http_host }} -type f -exec chmod 640 {} \\;"
+
+  - name: Set up wp-config
+    template:
+      src: "wp-config.php.j2"
+      dest: "/var/www/{{ http_host }}/wp-config.php"
+

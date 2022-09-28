@@ -1,0 +1,52 @@
+---
+mysql_root_password: "N7ty953NXr"
+http_host: "anstest.pp.ua"
+http_conf: "anstest.pp.ua.conf"
+http_port: "80"
+https_port: "443"
+
+mysql_db: "wordpress"
+mysql_user: "wptest74user"
+mysql_password: "9fr9xT49SJ"
+php_version: "8.1"
+
+ansible_user: "ubuntu"
+letsnecryptemail: "maksymmosurenko@gmail.com"
+
+#vars for csf
+csf_tmp_dir: "/usr/src"
+
+csf_required_packages:
+  - iptables
+  - perl
+  - unzip
+  - tar
+  - net-tools
+
+csf_global_ini_core:
+  - option: TESTING
+    value: "0"
+  - option: AUTO_UPDATES
+    value: "1"
+  - option: PORTS_sshd
+    value: "1234"
+
+csf_global_ini:
+  - option: RESTRICT_UI
+    value: "2"
+  - option: RESTRICT_SYSLOG
+    value: "2"
+  - option: URLGET
+    value: "2"
+  - option: USE_CONNTRACK
+    value: "1"
+  - option: TCP_IN
+    value: "80,1234,443"
+  - option: TCP_OUT
+    value: "1234,80,443"
+  - option: UDP_IN
+    value: "53"
+
+csf_allow:
+  - 10.0.0.0/16
+  - 46.201.174.167

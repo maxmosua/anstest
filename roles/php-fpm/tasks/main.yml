@@ -1,0 +1,36 @@
+---
+  - name: check if listed package is installed or not
+    command: dpkg-query -l "php{{ php_version }}-fpm"
+    register: package_check_php_fpm
+    ignore_errors: true
+
+  - name: installing the ppa:ondrej/php repo on Ubuntu systems
+    apt_repository:
+      repo: ppa:ondrej/php
+      update_cache: true
+    when: package_check_php_fpm is failed
+
+  - name: installing php-fpm packages to the host(s)
+    apt:
+      name:
+        - "php{{ php_version }}-fpm"
+        - "php{{ php_version }}-common"
+        - "php{{ php_version }}-mysql"
+        - "php{{ php_version }}-xml"
+        - "php{{ php_version }}-xmlrpc"
+        - "php{{ php_version }}-curl"
+        - "php{{ php_version }}-gd"
+        - "php{{ php_version }}-imagick"
+        - "php{{ php_version }}-cli"
+        - "php{{ php_version }}-dev"
+        - "php{{ php_version }}-imap"
+        - "php{{ php_version }}-mbstring"
+        - "php{{ php_version }}-opcache"
+        - "php{{ php_version }}-soap"
+        - "php{{ php_version }}-zip"
+        - "php{{ php_version }}-redis"
+        - "php{{ php_version }}-intl"
+      state: present
+    become: true
+    notify: restart php-fpm
+    when: package_check_php_fpm is failed

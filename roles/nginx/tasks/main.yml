@@ -1,0 +1,31 @@
+---
+  - name: install nginx
+    apt:
+      name: nginx
+      state: latest
+
+  - name: sets nginx conf file
+    template:
+      src: "nginx.conf.j2"
+      dest: "/etc/nginx/sites-available/{{ http_conf }}"
+
+  - name: enables new site
+    file:
+      src: "/etc/nginx/sites-available/{{ http_conf }}"
+      dest: "/etc/nginx/sites-enabled/{{ http_conf }}"
+      state: link
+    notify: reload nginx
+    
+  - name: removes "default" site
+    file:
+      path: "/etc/nginx/sites-enabled/default"
+      state: absent
+    notify: reload nginx
+
+  - name: create www directory
+    file:
+      path: /var/www/{{ http_host  }}
+      state: directory
+      mode: '0775'
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
